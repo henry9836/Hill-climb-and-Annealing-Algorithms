@@ -9,12 +9,13 @@
 //*****************************************************************************
 // NOTE:
 //
-// Lower value is a better score than a higher value for hillclimbing
-// Hence the reason most functions check for a lesser value for hillclimbing
+// Lower value is a better score than a higher value
+// Hence the reason most functions check for a lesser value
 //
 //****************************************************************************
 
 using namespace std;
+int main();
 
 #pragma region "Hill Climbing"
 
@@ -82,7 +83,7 @@ int* generateGrid(int *grid, int numQueens) {
 		//put the i value into the placement vector
 		choiceToPlace.push_back(gridOut[i]);
 		//store the value in a temp variable
-		temp = gridOut[i];
+		//temp = gridOut[i];
 
 		//row
 		for (int j = 0; j < numQueens; j++) {
@@ -129,7 +130,7 @@ void drawGrid(int *grid, int numQueens) {
 			}
 			//if the space is not a queen then place an O
 			else {
-				cout << " O ";
+				cout << " - ";
 			}
 		}
 		cout << endl;
@@ -203,36 +204,61 @@ void solveNQueens(int numQueens) {
 #pragma region "Simulated Annealing"
 
 
-int initialTemp = 10000;
-int finalTemp = 10;
-int e = 2.71828;
+float initialTemp = 10000;
+float finalTemp = 10;
+float temp = initialTemp;
 
 //makes a new grid from the current state, so makes a new state in the form of a grid
 int* generateGridAnneal(int *grid, int numQueens) {
 
-	int temp = initialTemp;
+
+	//placement vector
 	vector<int> placement;
-	int place;
+	//place to place the queen
+	int place = checkAttack(grid, numQueens);
+	//tempPlacement
+	int tempPlace;
+	//to store the new placement of the queen temp
 	int newPlace;
+	//create a new output grid
+	int* gridOut;
+	//fill the grid with values
+	gridOut = new int[numQueens];
+
+	//make the gridOut the same as the current grid
+	for (int i = 0; i < numQueens; i++) {
+		gridOut[i] = grid[i];
+	}
 
 	while (temp > finalTemp) {
-		//new placement stuffs
-		//cost new place - cost of ogPlace
+		for (int i = 0; i < numQueens; i++) {
+			placement.clear();
+			placement.push_back(gridOut[i]);
+			tempPlace = gridOut[i];
+			for (int j = 0; j < numQueens; j++) {
+				gridOut[i] = j;
+				newPlace = checkAttack(grid, numQueens);
+				if (newPlace <= 0) {
+					placement.push_back(j);
+					place = newPlace;
+				}
+				//if the new place is worse then the original place
+				else if (newPlace > place) {
+					//temp placement higher means more likely to take the worse option
+					if (rand() % 1 < (exp(checkAttack(grid, numQueens) / temp))) {
+						placement.clear();
+						placement.push_back(j);
+						place = newPlace;
+					}
+				}
+				
+
+			}
+		}
+		temp = temp - 0.05f;
+		//cout << temp << endl;
 	}
-	if (newPlace < 0) {
-		place = newPlace;
-	}
-	else if (rand() % 1> e - (cost/temp)) {
-		place = newPlace;
-	}
-
-
-	temp = temp - 10;
-
-
-	//else if (random(0,1) > e - (cost/temp) then place = new place)
-	//temp = schedule(temp)
-	
+	return gridOut;
 	//return the new grid
 	//return gridOut;
 }
@@ -319,6 +345,8 @@ int main() {
 	}
 	if(choice == 1) {
 		//start the simulated annealing algorithm
+		initialTemp = 10000;
+		temp = initialTemp;
 		solveNQueensAnneal(numQueens);
 	}
 	else if (choice <= 3) {
