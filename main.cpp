@@ -5,6 +5,7 @@
 #include <math.h> 
 #include <stdio.h>
 #include <stdlib.h>
+#include "vld.h"
 
 //*****************************************************************************
 // NOTE:
@@ -50,6 +51,23 @@ int checkAttack(int *grid, int numQueens) {
 	//if score == 0 then the algorithm is finished
 	return score;
 }
+//draws the final grid with the queens in place
+void drawGrid(int *grid, int numQueens) {
+
+	for (int i = 0; i < numQueens; i++) {
+		for (int j = 0; j < numQueens; j++) {
+			//places the queens
+			if (j == grid[i]) {
+				cout << " Q ";
+			}
+			//if the space is not a queen then place an O
+			else {
+				cout << " - ";
+			}
+		}
+		cout << endl;
+	}
+}
 
 //makes a new grid from the current state, so makes a new state in the form of a grid
 int* generateGrid(int *grid, int numQueens) {
@@ -57,10 +75,7 @@ int* generateGrid(int *grid, int numQueens) {
 	//create a placement vector
 	vector<int> choiceToPlace;
 
-	//temp value
-	int temp;
-	//score to check against
-	int score;
+
 	//sees if there are any attacks and gets the score
 	int attack = checkAttack(grid, numQueens);
 	//arbitray variable for comparison
@@ -98,6 +113,7 @@ int* generateGrid(int *grid, int numQueens) {
 
 				//put the value of j in the placement vector
 				choiceToPlace.push_back(j);
+				drawGrid(gridOut, numQueens);
 
 			}
 			//if k is less than attack
@@ -119,23 +135,7 @@ int* generateGrid(int *grid, int numQueens) {
 	return gridOut;
 }
 
-//draws the final grid with the queens in place
-void drawGrid(int *grid, int numQueens) {
 
-	for (int i = 0; i < numQueens; i++) {
-		for (int j = 0; j < numQueens; j++) {
-			//places the queens
-			if (j == grid[i]) {
-				cout << " Q ";
-			}
-			//if the space is not a queen then place an O
-			else {
-				cout << " - ";
-			}
-		}
-		cout << endl;
-	}
-}
 
 //finds the next place to move to, if there is no place to move to then it will restart with a new grid
 bool findNextState(int *grid, int numQueens) {
@@ -204,7 +204,7 @@ void solveNQueens(int numQueens) {
 #pragma region "Simulated Annealing"
 
 
-float initialTemp = 10000;
+float initialTemp = 1000;
 float finalTemp = 10;
 float temp = initialTemp;
 
@@ -217,13 +217,15 @@ int* generateGridAnneal(int *grid, int numQueens) {
 	//place to place the queen
 	int place = checkAttack(grid, numQueens);
 	//tempPlacement
-	int tempPlace;
+//	int tempPlace;
 	//to store the new placement of the queen temp
 	int newPlace;
 	//create a new output grid
 	int* gridOut;
 	//fill the grid with values
 	gridOut = new int[numQueens];
+
+//	int newCost;
 
 	//make the gridOut the same as the current grid
 	for (int i = 0; i < numQueens; i++) {
@@ -234,18 +236,21 @@ int* generateGridAnneal(int *grid, int numQueens) {
 		for (int i = 0; i < numQueens; i++) {
 			placement.clear();
 			placement.push_back(gridOut[i]);
-			tempPlace = gridOut[i];
+			//place = gridOut[i];
 			for (int j = 0; j < numQueens; j++) {
 				gridOut[i] = j;
-				newPlace = checkAttack(grid, numQueens);
-				if (newPlace <= 0) {
+				newPlace = checkAttack(gridOut, numQueens);
+				if (newPlace == place) {
 					placement.push_back(j);
-					place = newPlace;
 				}
 				//if the new place is worse then the original place
-				else if (newPlace > place) {
+				else if (newPlace < place) {
+					float rando = (rand() / (float)RAND_MAX * 1);
 					//temp placement higher means more likely to take the worse option
-					if (rand() % 1 < (exp(checkAttack(grid, numQueens) / temp))) {
+					if (rando > (exp(checkAttack(gridOut, numQueens) - checkAttack(grid, numQueens) / temp))) {
+						placement.push_back(j);
+					}
+					else { 
 						placement.clear();
 						placement.push_back(j);
 						place = newPlace;
@@ -254,13 +259,14 @@ int* generateGridAnneal(int *grid, int numQueens) {
 				
 
 			}
+			//i value of gridOut becomes a random placement equal to the size of placement vector
+			gridOut[i] = placement[rand() % placement.size()];;
 		}
 		temp = temp - 0.05f;
-		//cout << temp << endl;
+		cout << temp << endl;
+
 	}
 	return gridOut;
-	//return the new grid
-	//return gridOut;
 }
 
 bool findNextStateAnneal(int *grid, int numQueens) {
@@ -300,7 +306,12 @@ void solveNQueensAnneal(int numQueens) {
 	//while there are still attacks that can be made
 	while (checkAttack(grid, numQueens) != 0) {
 		if (findNextStateAnneal(grid, numQueens) == false) {
-			initialRandomGrid(grid, numQueens);
+			drawGrid(grid, numQueens);
+			system("Pause");
+			temp = initialTemp;
+			generateGridAnneal(grid, numQueens);
+				//cout << "Still Thinking" << endl;
+				//initialRandomGrid(grid, numQueens);
 		}
 	}
 	cout << endl << "Answer for " << numQueens << " queens using simulated annealing: " << endl << endl;
@@ -339,26 +350,24 @@ int main() {
 
 	cout << "Do you want to use hill climbing(0) or simulated annealing(1)?" << endl;
 	cin >> choice;
+	if(choice >= 3) {
+		cout << "Not a valid choice" << endl;
+	}
+
 	if (choice == 0) {
 		//start the hillclimb algorithm
 		solveNQueens(numQueens);
 	}
 	if(choice == 1) {
 		//start the simulated annealing algorithm
-		initialTemp = 10000;
+		initialTemp = 1000;
 		temp = initialTemp;
 		solveNQueensAnneal(numQueens);
 	}
-	else if (choice <= 3) {
-		cout << "Not a valid choice" << endl;
-	}
-	//start the algorithm
-	//solveNQueens(numQueens);
 
 	system("Pause");
 	//allows user to run the algorithms again
 	main();
-	return 0;
 
 }
 #pragma endregion
