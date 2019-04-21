@@ -196,6 +196,8 @@ void solveNQueens(int numQueens) {
 	cout << endl << "Answer for " << numQueens << " queens:" << endl << endl;
 	//draw the final grid with the queens in the correct places
 	drawGrid(grid, numQueens);
+	system("Pause");
+	main();
 }
 
 #pragma endregion
@@ -317,6 +319,8 @@ void solveNQueensAnneal(int numQueens) {
 	cout << endl << "Answer for " << numQueens << " queens using simulated annealing: " << endl << endl;
 	//draws the final grid
 	drawGrid(grid, numQueens);
+	system("Pause");
+	main();
 
 }	
 
@@ -347,27 +351,22 @@ int main() {
 
 	//used for which algorithm the user wants to choose
 	int choice = 3;
-
+	while (choice >= 2 || choice < 0) {
 	cout << "Do you want to use hill climbing(0) or simulated annealing(1)?" << endl;
 	cin >> choice;
-	if(choice >= 3) {
-		cout << "Not a valid choice" << endl;
-	}
-
-	if (choice == 0) {
-		//start the hillclimb algorithm
-		solveNQueens(numQueens);
-	}
-	if(choice == 1) {
-		//start the simulated annealing algorithm
-		initialTemp = 1000;
-		temp = initialTemp;
-		solveNQueensAnneal(numQueens);
+	
+		if (choice == 0) {
+			//start the hillclimb algorithm
+			solveNQueens(numQueens);
+		}
+		if (choice == 1) {
+			//start the simulated annealing algorithm
+			initialTemp = 1000;
+			temp = initialTemp;
+			solveNQueensAnneal(numQueens);
+		}
 	}
 
 	system("Pause");
-	//allows user to run the algorithms again
-	main();
-
 }
 #pragma endregion
